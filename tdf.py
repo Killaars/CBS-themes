@@ -7,7 +7,7 @@ import pickle
 from project_functions import preprocessing_child,remove_stopwords_from_content
 #%%
 path = Path('/Users/rwsla/Lars/CBS_2_mediakoppeling/data/solr/')
-path = Path('/flashblade/lars_data/CBS/CBS2_mediakoppeling/data/solr/')
+#path = Path('/flashblade/lars_data/CBS/CBS2_mediakoppeling/data/solr/')
 
 children = pd.read_csv(str(path / 'related_children.csv'),index_col=0)
 
@@ -60,9 +60,9 @@ from sklearn import metrics
 # Model Generation Using Multinomial Naive Bayes
 clf = MultinomialNB().fit(X_train, y_train)
 
-print('Saving model...')
-filename = 'MultiNB_tf.sav'
-pickle.dump(clf, open(filename, 'wb'))
+#print('Saving model...')
+#filename = 'MultiNB_tf.sav'
+#pickle.dump(clf, open(filename, 'wb'))
 
 predicted= clf.predict(X_test)
 print("MultinomialNB Accuracy TF-IDF:",metrics.accuracy_score(y_test, predicted))
@@ -76,16 +76,17 @@ children_capped_themes.loc[:,'splitted_content'] = children_capped_themes.loc[:,
 #%%
 a = datetime.datetime.now()
 print('busy with BM25')
-BM25 = get_bm25_weights(children_capped_themes.loc[:,'splitted_content'])
+small_test = children_capped_themes.sample(n=5000)
+BM25 = get_bm25_weights(small_test.loc[:,'splitted_content'])
 #%%
 from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(
-    BM25, children_capped_themes['encoded_label'], test_size=0.2, random_state=123)
+    BM25, small_test['encoded_label'], test_size=0.2, random_state=123)
 #%%
 from sklearn.naive_bayes import MultinomialNB
 from sklearn import metrics
 # Model Generation Using Multinomial Naive Bayes
-clf = MultinomialNB().fit(X_train[50000:], y_train[50000:])
+clf = MultinomialNB().fit(X_train, y_train)
 
 filename = 'MultiNB_BM25.sav'
 pickle.dump(clf, open(filename, 'wb'))
